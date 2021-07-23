@@ -9,13 +9,14 @@ import random
 import os
 import requests
 import json
-from PIL import Image
+from datetime import datetime
 import urllib.request
 
 '''
 Chooses three random photos 
 from the plethora of photos taken from mars 
-rovers on a given date.
+rovers on a given date. If there are less than three 
+photos, then it sends what is available.
 
 Returns a dictionary with the structure
 key           value 
@@ -43,12 +44,19 @@ def composeURLPhotos(apiCall, photoType) :
   return url_to_file
 
 
+
+# Client side of the code
+
 client = commands.Bot(command_prefix = '$')
 
 @client.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
 
+''' 
+$photo : sends up to 3 latest random photos of Mars
+to server with rover name, camera type, and date taken 
+'''
 @client.command()
 async def photos(ctx) :
    url_to_file = composeURLPhotos('https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/latest_photos?api_key=4hvbdm3crmOBYueVE4FJSwRG3f1vhZykwNhgrqaW', 'latest_photos')
@@ -63,5 +71,28 @@ async def photos(ctx) :
          await ctx.channel.send('Rover ' + url_to_file[urls][1] + ' \|| ' + url_to_file[urls][2] + ' || ' + url_to_file[urls][3])
          await ctx.channel.send(file=discord.File(file_name))
          os.remove(file_name)
+
+
+''' 
+$photosDate YYYY-MM-DD : sends up to three random mars
+photos from a specified date 
+'''
+@client.command()
+async def photosDate(ctx, date) :
+   if bool(datetime.strptime(date, "%Y-%m-%d")) :
+    url_to_file = composeURLPhotos("https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos?api_key=4hvbdm3crmOBYueVE4FJSwRG3f1vhZykwNhgrqaW&earth_date={}".format(date), 'photos')
+    if url_to_file == None :
+     await ctx.channel.send("No Photos Available")
+    else :
+        await ctx.channel.send('Here are Mars Photos from '+date+'!')
+        for urls in url_to_file :
+          file_name = url_to_file[urls][0]
+          urllib.request.urlretrieve(urls, file_name)
+          await ctx.channel.send('_ _')
+          await ctx.channel.send('Rover ' + url_to_file[urls][1] + ' \|| ' + url_to_file[urls][2] + ' || ' + url_to_file[urls][3])
+          await ctx.channel.send(file=discord.File(file_name))
+          os.remove(file_name)
+   else :
+     await ctx.channel.send('Please enter a valid date in the following format: YYYY-MM-DD')
 
 client.run(os.getenv('TOKEN'))
