@@ -4,6 +4,7 @@
 # Also use the mars weather API
 
 import discord
+from discord.ext import commands
 import random 
 import os
 import requests
@@ -11,50 +12,56 @@ import json
 from PIL import Image
 import urllib.request
 
-
-response = requests.get("https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos?api_key=DEMO_KEY&earth_date=2021-7-21")
-
-obj = json.loads(response.text)
-
-url_to_file = {}
-
-numOfPhotos = len(obj["photos"])
-if numOfPhotos == 0 :
-  print('TRy agAin')
-if numOfPhotos < 3 :
-  for photos in obj["photos"] :
-    url_to_file[photos['img_src'] : photos['img_src'].split("/")[-1:][0]]
-else :
-  for photos in random.sample(range(0, numOfPhotos), 3) :
-    url = obj["photos"][photos]["img_src"]
-    file_name = url.split("/")[-1:][0]
-    url_to_file[url] = file_name
-
-print(url_to_file)
-  
-
-
-'''urllib.request.urlretrieve(url, file_name)
-img = Image.open(file_name)
-img.show()
-os.remove(file_name)
-
-# print(obj)
-
-
-#client = discord.Client()
-
-#@client.event
-#async def on_ready():
-#    print('We have logged in as {0.user}'.format(client))
-
-#@client.event
-#async def on_message(message):
-#    if message.author == client.user:
-#        return
-
-#    if message.content.startswith('$hello'):
-#        await message.channel.send('Hello!')
-
-#client.run(os.getenv('TOKEN'))
 '''
+Chooses three random photos 
+from the plethora of photos taken from mars 
+rovers on a given date.
+
+Returns a dictionary with the structure
+key           value 
+[photo URL] : [file name, Rover, Camera type, date taken]  
+'''
+def composeURLPhotos(apiCall, photoType) :
+  response = requests.get(apiCall)
+  obj = json.loads(response.text)
+  url_to_file = {}
+  numOfPhotos = len(obj[photoType])
+  if numOfPhotos == 0 :
+    return None
+  if numOfPhotos < 3 :
+    for photos in obj[photoType] :
+      url_to_file[photos['img_src']] = photos['img_src'].split("/")[-1:][0]
+  else :
+    for photos in random.sample(range(0, numOfPhotos), 3) :
+      url = obj[photoType][photos]["img_src"]
+      file_name = url.split("/")[-1:][0]
+      rover = obj[photoType][photos]["rover"]["name"]
+      camera = obj[photoType][photos]["camera"]["full_name"]
+      date_taken = obj[photoType][photos]["earth_date"]
+
+      url_to_file[url] = [file_name, rover, camera, date_taken]
+  return url_to_file
+
+
+client = commands.Bot(command_prefix = '$')
+
+@client.event
+async def on_ready():
+    print('We have logged in as {0.user}'.format(client))
+
+@client.command()
+async def photos(ctx) :
+   url_to_file = composeURLPhotos('https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/latest_photos?api_key=4hvbdm3crmOBYueVE4FJSwRG3f1vhZykwNhgrqaW', 'latest_photos')
+   if url_to_file == None :
+     await ctx.channel.send("No Photos Available")
+   else :
+       await ctx.channel.send('Here are the latest Photos of Mars!')
+       for urls in url_to_file :
+         file_name = url_to_file[urls][0]
+         urllib.request.urlretrieve(urls, file_name)
+         await ctx.channel.send('_ _')
+         await ctx.channel.send('Rover ' + url_to_file[urls][1] + ' \|| ' + url_to_file[urls][2] + ' || ' + url_to_file[urls][3])
+         await ctx.channel.send(file=discord.File(file_name))
+         os.remove(file_name)
+
+client.run(os.getenv('TOKEN'))
