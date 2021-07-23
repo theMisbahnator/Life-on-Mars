@@ -4,6 +4,7 @@
 # Also use the mars weather API
 
 import discord
+import random 
 import os
 import requests
 import json
@@ -11,24 +12,31 @@ from PIL import Image
 import urllib.request
 
 
-response = requests.get("https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos?earth_date=2015-6-3&api_key=DEMO_KEY")
+response = requests.get("https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos?api_key=DEMO_KEY&earth_date=2021-7-21")
 
 obj = json.loads(response.text)
 
+url_to_file = {}
 
-url = obj["photos"][0]['img_src']
-file_name = url.split("/")[-1:][0]
+numOfPhotos = len(obj["photos"])
+if numOfPhotos == 0 :
+  print('TRy agAin')
+if numOfPhotos < 3 :
+  for photos in obj["photos"] :
+    url_to_file[photos['img_src'] : photos['img_src'].split("/")[-1:][0]]
+else :
+  for photos in random.sample(range(0, numOfPhotos), 3) :
+    url = obj["photos"][photos]["img_src"]
+    file_name = url.split("/")[-1:][0]
+    url_to_file[url] = file_name
 
-print(file_name)
-
-urllib.request.urlretrieve(url, file_name)
-
+print(url_to_file)
+  
 
 
+'''urllib.request.urlretrieve(url, file_name)
 img = Image.open(file_name)
-
 img.show()
-
 os.remove(file_name)
 
 # print(obj)
@@ -49,3 +57,4 @@ os.remove(file_name)
 #        await message.channel.send('Hello!')
 
 #client.run(os.getenv('TOKEN'))
+'''
