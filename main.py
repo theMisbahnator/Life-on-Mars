@@ -1,8 +1,3 @@
-# Discord Bot: 
-# Role: Provides daily photo images of mars using NASA API
-# Implements a webscraper to pull recent articles of mars that day
-# Also use the mars weather API
-
 import discord
 from discord.ext import commands
 import random 
@@ -43,25 +38,33 @@ def composeURLPhotos(apiCall, photoType) :
       url_to_file[url] = [file_name, rover, camera, date_taken]
   return url_to_file
 
-def verfiyParam(*param) :
-  params = []
-  for arg in param :
-    params.append(arg)
-    if len(params) == 2 : 
-      break
+def verfiyParam(param, informUser) :
   rover = "perseverance"
-  print(params)
-  url_to_file = {} 
+  dateFormat = True
+  size = len(param)
+  
+  # informs user of any invalid command structure
+  if size == 0 :
+    informUser.append("No args specified, defaulted to Perseverance and latest photos.")
+  if size >= 1 :
+    if param[0].lower() != "perseverance" and param[0].lower() != "curiosity" :
+      informUser.append("No active rover specified, defaulted to Perseverance.")
+  if size >= 2 :
+    try :
+      bool(datetime.strptime(param[1], "%Y-%m-%d"))
+    except ValueError :
+      dateFormat = False
+      informUser.append("Invalid date Format. Enter as YYYY-MM-DD. Defaulted to latest photos.")
+  
+  # creates api calls based on commands
+  url_to_file = {}
   if len(param) > 0 and param[0].lower() == "curiosity" :
     rover = 'curiosity'
-  if len(param) > 1 and bool(datetime.strptime(param[1], "%Y-%m-%d")) == True :
+  if len(param) > 1 and dateFormat :
     url_to_file = composeURLPhotos("https://api.nasa.gov/mars-photos/api/v1/rovers/{}/photos?api_key=4hvbdm3crmOBYueVE4FJSwRG3f1vhZykwNhgrqaW&earth_date={}".format(rover, param[1]), 'photos')
   else :
     url_to_file = composeURLPhotos('https://api.nasa.gov/mars-photos/api/v1/rovers/{}/latest_photos?api_key=4hvbdm3crmOBYueVE4FJSwRG3f1vhZykwNhgrqaW'.format(rover), 'latest_photos')
   return url_to_file
-
-
-
 
 # Client side of the code
 
@@ -71,11 +74,6 @@ client = commands.Bot(command_prefix = '$')
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
 
-@client.command()
-async def imgTest(ctx, arg1, arg2) :
-  await ctx.send('You passed {} and {}'.format(arg1, arg2))
-
-
 '''
 $img [roverName] []
 sends up to 3 latest random photos of Mars
@@ -83,11 +81,24 @@ to server with rover name, camera type, and date taken
 '''
 @client.command()
 async def img(ctx, *args) :
-  url_to_file = verfiyParam(*args)
+  # parses through args attached with user command
+  params = []
+  informUser = []
+  for arg in args :
+    params.append(arg)
+    if len(params) == 2 : 
+      break
+  url_to_file = verfiyParam(params, informUser)
+
+  # notifies user of any invalid formatting 
+  for complaints in informUser :
+    await ctx.channel.send(complaints)
+
+  # sends terrain photos
   if url_to_file == None :
      await ctx.channel.send("No Photos Available")
   else :
-       await ctx.channel.send('Here are the latest Photos of Mars!')
+       await ctx.channel.send('Here are some terrain images of Mars!')
        for urls in url_to_file :
          file_name = url_to_file[urls][0]
          urllib.request.urlretrieve(urls, file_name)
@@ -95,47 +106,4 @@ async def img(ctx, *args) :
          await ctx.channel.send('Rover ' + url_to_file[urls][1] + ' \|| ' + url_to_file[urls][2] + ' || ' + url_to_file[urls][3])
          await ctx.channel.send(file=discord.File(file_name))
          os.remove(file_name)
-
-''' 
-$photo : sends up to 3 latest random photos of Mars
-to server with rover name, camera type, and date taken 
-
-@client.command()
-async def img(ctx, rover, date) :
-   url_to_file = composeURLPhotos('https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/latest_photos?api_key=4hvbdm3crmOBYueVE4FJSwRG3f1vhZykwNhgrqaW', 'latest_photos')
-   if url_to_file == None :
-     await ctx.channel.send("No Photos Available")
-   else :
-       await ctx.channel.send('Here are the latest Photos of Mars!')
-       for urls in url_to_file :
-         file_name = url_to_file[urls][0]
-         urllib.request.urlretrieve(urls, file_name)
-         await ctx.channel.send('_ _')
-         await ctx.channel.send('Rover ' + url_to_file[urls][1] + ' \|| ' + url_to_file[urls][2] + ' || ' + url_to_file[urls][3])
-         await ctx.channel.send(file=discord.File(file_name))
-         os.remove(file_name)
-
-'''
-''' 
-$photosDate YYYY-MM-DD : sends up to three random mars
-photos from a specified date 
-'''
-@client.command()
-async def photosDate(ctx, date) :
-   if bool(datetime.strptime(date, "%Y-%m-%d")) :
-    url_to_file = composeURLPhotos("https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos?api_key=4hvbdm3crmOBYueVE4FJSwRG3f1vhZykwNhgrqaW&earth_date={}".format(date), 'photos')
-    if url_to_file == None :
-     await ctx.channel.send("No Photos Available")
-    else :
-        await ctx.channel.send('Here are Mars Photos from '+date+'!')
-        for urls in url_to_file :
-          file_name = url_to_file[urls][0]
-          urllib.request.urlretrieve(urls, file_name)
-          await ctx.channel.send('_ _')
-          await ctx.channel.send('Rover ' + url_to_file[urls][1] + ' \|| ' + url_to_file[urls][2] + ' || ' + url_to_file[urls][3])
-          await ctx.channel.send(file=discord.File(file_name))
-          os.remove(file_name)
-   else :
-     await ctx.channel.send('Please enter a valid date in the following format: YYYY-MM-DD')
-
 client.run(os.getenv('TOKEN'))
