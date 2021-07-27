@@ -15,6 +15,11 @@ Enjoy! - Misbah Imtiaz
 
 Here are the commands below:
 
+$img --- Sends user latest photos from perseverance rover
+$img perseverance --- same funcitonaltiy as above
+$img curiosity --- sends user latest photos from curiosity rover
+$img perseverance YYYY-MM-DD --- sends user photos from perseverance rover on the specified date
+$img curiosity YYYY-MM-DD --- sends user photos from curiosity rover on the specified date
 
 
 Worked concurrently with [Emad Tirmizi](https://github.com/et75/StarGazer) ;)
