@@ -66,11 +66,23 @@ def verfiyParam(param, informUser) :
 # Client side of the code
 
 client = commands.Bot(command_prefix = '$')
+client.remove_command('help')
 
 @client.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
 
+
+# Sends user list of valid commands
+# command: $help
+@client.command()
+async def help(ctx) :
+  await ctx.channel.send('List of Commands!')
+  await ctx.channel.send('**$img** --- Sends latest photos from perseverance rover')
+  await ctx.channel.send('**$img perseverance** --- same functionality as above')
+  await ctx.channel.send('**$img curiosity** --- sends latest photos from curiosity rover')
+  await ctx.channel.send('**$img perseverance YYYY-MM-DD** --- sends photos from perseverance rover on specified date')
+  await ctx.channel.send('**$img curiosity YYYY-MM-DD** --- sends photos from curiosity rover on specified date')
 
 # Sends up to three terrain photos of Mars.
 # Users can query based on rover (perseverance, curiosity)
