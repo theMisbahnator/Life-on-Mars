@@ -7,55 +7,52 @@ import json
 from datetime import datetime
 import urllib.request
 
-'''
-Chooses three random photos 
-from the plethora of photos taken from mars 
-rovers on a given date. If there are less than three 
-photos, then it sends what is available.
-
-Returns a dictionary with the structure
-key           value 
-[photo URL] : [file name, Rover, Camera type, date taken]  
-'''
+# Chooses three random photos 
+# from the plethora of photos taken from mars 
+# rovers on a given date. If there are less than three 
+# photos, then it sends what is available.
+# @Returns a dictionary with the structure
+# key           value 
+# [photo URL] : [file name, Rover, Camera type, date taken] 
 def composeURLPhotos(apiCall, photoType) :
-  response = requests.get(apiCall)
-  obj = json.loads(response.text)
+  photo_data = json.loads(requests.get(apiCall).text)
   url_to_file = {}
-  numOfPhotos = len(obj[photoType])
-  if numOfPhotos == 0 :
+  if len(photo_data[photoType]) == 0 :
     return None
-  if numOfPhotos < 3 :
-    for photos in obj[photoType] :
+  if len(photo_data[photoType]) < 3 :
+    for photos in photo_data[photoType] :
       url_to_file[photos['img_src']] = photos['img_src'].split("/")[-1:][0]
   else :
-    for photos in random.sample(range(0, numOfPhotos), 3) :
-      url = obj[photoType][photos]["img_src"]
+    # Chooses 3 random photos from api call
+    for photos in random.sample(range(0, len(photo_data[photoType])), 3) :
+      url = photo_data[photoType][photos]["img_src"]
       file_name = url.split("/")[-1:][0]
-      rover = obj[photoType][photos]["rover"]["name"]
-      camera = obj[photoType][photos]["camera"]["full_name"]
-      date_taken = obj[photoType][photos]["earth_date"]
-
+      rover = photo_data[photoType][photos]["rover"]["name"]
+      camera = photo_data[photoType][photos]["camera"]["full_name"]
+      date_taken = photo_data[photoType][photos]["earth_date"]
       url_to_file[url] = [file_name, rover, camera, date_taken]
   return url_to_file
 
+
+# From the user response, mutates the passed list informing
+# user of incorrect formating of bot commands. Additionaly, 
+# creates api call based on cdiscord command.
+# @Returns a dictionary described by composeURLPhotos()
 def verfiyParam(param, informUser) :
   rover = "perseverance"
   dateFormat = True
-  size = len(param)
-  
   # informs user of any invalid command structure
-  if size == 0 :
+  if len(param) == 0 :
     informUser.append("No args specified, defaulted to Perseverance and latest photos.")
-  if size >= 1 :
+  if len(param) >= 1 :
     if param[0].lower() != "perseverance" and param[0].lower() != "curiosity" :
       informUser.append("No active rover specified, defaulted to Perseverance.")
-  if size >= 2 :
+  if len(param) >= 2 :
     try :
       bool(datetime.strptime(param[1], "%Y-%m-%d"))
     except ValueError :
       dateFormat = False
       informUser.append("Invalid date Format. Enter as YYYY-MM-DD. Defaulted to latest photos.")
-  
   # creates api calls based on commands
   url_to_file = {}
   if len(param) > 0 and param[0].lower() == "curiosity" :
@@ -74,11 +71,14 @@ client = commands.Bot(command_prefix = '$')
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
 
-'''
-$img [roverName] []
-sends up to 3 latest random photos of Mars
-to server with rover name, camera type, and date taken 
-'''
+
+# Sends up to three terrain photos of Mars.
+# Users can query based on rover (perseverance, curiosity)
+# and date.
+# Commands:
+# $img
+# $img [roverName]
+# $img [roverName] [date] 
 @client.command()
 async def img(ctx, *args) :
   # parses through args attached with user command
@@ -89,12 +89,10 @@ async def img(ctx, *args) :
     if len(params) == 2 : 
       break
   url_to_file = verfiyParam(params, informUser)
-
   # notifies user of any invalid formatting 
   for complaints in informUser :
     await ctx.channel.send(complaints)
-
-  # sends terrain photos
+  # sends terrain photos to user
   if url_to_file == None :
      await ctx.channel.send("No Photos Available")
   else :
