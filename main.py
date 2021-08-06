@@ -7,6 +7,11 @@ import json
 from datetime import datetime
 import urllib.request
 
+# Web scraping components 
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+import pandas as pd
+
 # Chooses three random photos 
 # from the plethora of photos taken from mars 
 # rovers on a given date. If there are less than three 
@@ -116,4 +121,4 @@ async def img(ctx, *args) :
          await ctx.channel.send('Rover ' + url_to_file[urls][1] + ' \|| ' + url_to_file[urls][2] + ' || ' + url_to_file[urls][3])
          await ctx.channel.send(file=discord.File(file_name))
          os.remove(file_name)
-client.run(os.getenv('TOKEN'))
+client.run("ODY2ODMwOTMxOTEwNTkwNDg1.YPYRNw.hMMeBHekpMuZN3fxkHnRpTErtOY")
