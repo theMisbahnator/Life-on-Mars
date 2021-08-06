@@ -24,9 +24,6 @@ def composeURLPhotos(apiCall, photoType) :
   url_to_file = {}
   if len(photo_data[photoType]) == 0 :
     return None
-  if len(photo_data[photoType]) < 3 :
-    for photos in photo_data[photoType] :
-      url_to_file[photos['img_src']] = photos['img_src'].split("/")[-1:][0]
   else :
     # Chooses 3 random photos from api call
     for photos in random.sample(range(0, len(photo_data[photoType])), 3) :
@@ -121,4 +118,4 @@ async def img(ctx, *args) :
          await ctx.channel.send('Rover ' + url_to_file[urls][1] + ' \|| ' + url_to_file[urls][2] + ' || ' + url_to_file[urls][3])
          await ctx.channel.send(file=discord.File(file_name))
          os.remove(file_name)
-client.run("ODY2ODMwOTMxOTEwNTkwNDg1.YPYRNw.hMMeBHekpMuZN3fxkHnRpTErtOY")
+client.run(json.load(open('config.json'))["token"])
