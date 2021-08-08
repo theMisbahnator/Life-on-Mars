@@ -9,8 +9,10 @@ import urllib.request
 
 # Web scraping components 
 from selenium import webdriver
+DRIVER_PATH = '/home/misbahaving/Documents/chromedriver'
+driver = webdriver.Chrome(executable_path=DRIVER_PATH)
+driver.get('https://google.com')
 from selenium.webdriver.common.keys import Keys
-import pandas as pd
 
 # Chooses three random photos 
 # from the plethora of photos taken from mars 
