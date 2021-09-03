@@ -14,16 +14,8 @@ provided relevant news scrapped on the internet using a web scraper.
 Enjoy! - Misbah Imtiaz
 
 Here are the commands below:
+Note: the part of commands attached to the $ (ex. $[img] and $[imgCount]) are CASE SENSITIVE.
 
-$img --- Sends user latest photos from perseverance rover
-
-$img perseverance --- same functionality as above
-
-$img curiosity --- sends user latest photos from curiosity rover
-
-$img perseverance YYYY-MM-DD --- sends user photos from perseverance rover on the specified date
-
-$img curiosity YYYY-MM-DD --- sends user photos from curiosity rover on the specified date
-
+![photo](https://cdn.discordapp.com/attachments/812182978640740393/883181549611278426/unknown.png)
 
 Worked concurrently with [Emad Tirmizi](https://github.com/et75/StarGazer) ;)
