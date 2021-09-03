@@ -6,13 +6,11 @@ import requests
 import json
 from datetime import datetime
 import urllib.request
+from webscraper import *
 
-# Web scraping components 
-from selenium import webdriver
-DRIVER_PATH = '/home/misbahaving/Documents/chromedriver'
-driver = webdriver.Chrome(executable_path=DRIVER_PATH)
-driver.get('https://google.com')
-from selenium.webdriver.common.keys import Keys
+# default limit values for sending photos and articles
+ARTICLE_COUNT = 5
+PHOTO_COUNT = 3
 
 # Chooses three random photos 
 # from the plethora of photos taken from mars 
@@ -28,7 +26,7 @@ def composeURLPhotos(apiCall, photoType) :
     return None
   else :
     # Chooses 3 random photos from api call
-    for photos in random.sample(range(0, len(photo_data[photoType])), 3) :
+    for photos in random.sample(range(0, len(photo_data[photoType])), (int) (PHOTO_COUNT)) :
       url = photo_data[photoType][photos]["img_src"]
       file_name = url.split("/")[-1:][0]
       rover = photo_data[photoType][photos]["rover"]["name"]
@@ -76,6 +74,19 @@ client.remove_command('help')
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
 
+# changes article limit to send to user
+@client.command()
+async def articleCount(ctx, count) :
+  global ARTICLE_COUNT 
+  ARTICLE_COUNT = count
+  await ctx.channel.send("Article limit for $articles calls are now {}!".format(count)) 
+
+# changes article limit to send to user
+@client.command()
+async def imgCount(ctx, count) :
+  global PHOTO_COUNT
+  PHOTO_COUNT = count
+  await ctx.channel.send("Photo limit for $img calls are now {}!".format(count))
 
 # Sends user list of valid commands
 # command: $help
@@ -83,10 +94,13 @@ async def on_ready():
 async def help(ctx) :
   await ctx.channel.send('List of Commands!')
   await ctx.channel.send('**$img** --- Sends latest photos from perseverance rover')
+  await ctx.channel.send('**$imgCount** --- Whens using $img, changes amount of photos sent by desired value')
   await ctx.channel.send('**$img perseverance** --- same functionality as above')
   await ctx.channel.send('**$img curiosity** --- sends latest photos from curiosity rover')
   await ctx.channel.send('**$img perseverance YYYY-MM-DD** --- sends photos from perseverance rover on specified date')
   await ctx.channel.send('**$img curiosity YYYY-MM-DD** --- sends photos from curiosity rover on specified date')
+  await ctx.channel.send('**$articles [page number]** --- Sends mars articles from a desired page on google news')
+  await ctx.channel.send('**$articleCount** --- Whens using $article [page number], changes amount of articles sent by desired value')
 
 # Sends up to three terrain photos of Mars.
 # Users can query based on rover (perseverance, curiosity)
@@ -120,4 +134,25 @@ async def img(ctx, *args) :
          await ctx.channel.send('Rover ' + url_to_file[urls][1] + ' \|| ' + url_to_file[urls][2] + ' || ' + url_to_file[urls][3])
          await ctx.channel.send(file=discord.File(file_name))
          os.remove(file_name)
+
+@client.command()
+async def articles(ctx, pageNumber) :
+  # readjusts invalid page requests  
+  if int(pageNumber) < 1 :
+    await ctx.channel.send('Sent a number less than one, defaulted to first page.')
+    await ctx.channel.send('_ _')
+    pageNumber = '1'
+  elif int(pageNumber) > 10 :
+    await ctx.channel.send('Sent a number Greater than 10, defaulted to 10th page.')
+    await ctx.channel.send('_ _')
+    pageNumber = '10'
+  
+  articles = MarsArticles(int(pageNumber), (int) (ARTICLE_COUNT))
+  list_of_articles = articles.getArticles()
+  await ctx.channel.send('Here are the articles from page ' + pageNumber + ".")
+  await ctx.channel.send('_ _')
+
+  for articles in list_of_articles :
+    await ctx.channel.send(articles)
+    await ctx.channel.send('_ _')
 client.run(json.load(open('config.json'))["token"])
