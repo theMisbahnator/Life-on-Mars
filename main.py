@@ -168,4 +168,4 @@ async def articles(ctx, pageNumber) :
   for articles in list_of_articles :
     await ctx.channel.send(articles)
     await ctx.channel.send('_ _')
-client.run(json.load(open('config.json'))["token"])
+client.run(os.environ['BOT_TOKEN'])
