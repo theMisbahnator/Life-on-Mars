@@ -1,3 +1,4 @@
+# libraries! 
 import discord
 from discord.ext import commands
 import random 
@@ -75,6 +76,8 @@ async def on_ready():
     print('We have logged in as {0.user}'.format(client))
 
 # changes article limit to send to user
+# command:
+# $articleCount [number]
 @client.command()
 async def articleCount(ctx, count) :
   global ARTICLE_COUNT 
@@ -82,6 +85,8 @@ async def articleCount(ctx, count) :
   await ctx.channel.send("Article limit for $articles calls are now {}!".format(count)) 
 
 # changes article limit to send to user
+# command:
+# $imgCount [number]
 @client.command()
 async def imgCount(ctx, count) :
   global PHOTO_COUNT
@@ -94,15 +99,16 @@ async def imgCount(ctx, count) :
 async def help(ctx) :
   await ctx.channel.send('List of Commands!')
   await ctx.channel.send('**$img** --- Sends latest photos from perseverance rover')
-  await ctx.channel.send('**$imgCount** --- Whens using $img, changes amount of photos sent by desired value')
+  await ctx.channel.send('**$imgCount [number]** --- Whens using $img, changes amount of photos sent by desired value')
   await ctx.channel.send('**$img perseverance** --- same functionality as above')
   await ctx.channel.send('**$img curiosity** --- sends latest photos from curiosity rover')
   await ctx.channel.send('**$img perseverance YYYY-MM-DD** --- sends photos from perseverance rover on specified date')
   await ctx.channel.send('**$img curiosity YYYY-MM-DD** --- sends photos from curiosity rover on specified date')
   await ctx.channel.send('**$articles [page number]** --- Sends mars articles from a desired page on google news')
-  await ctx.channel.send('**$articleCount** --- Whens using $article [page number], changes amount of articles sent by desired value')
+  await ctx.channel.send('**$articleCount [number]** --- Whens using $article [page number], changes amount of articles sent by desired value')
 
-# Sends up to three terrain photos of Mars.
+# Sends up to three terrain photos of Mars. Users can change 
+# amount of photos being sent using $imgCount [number]
 # Users can query based on rover (perseverance, curiosity)
 # and date.
 # Commands:
@@ -135,6 +141,12 @@ async def img(ctx, *args) :
          await ctx.channel.send(file=discord.File(file_name))
          os.remove(file_name)
 
+# webscraping feature allows articles to be pulled from google 
+# using the search term "mars"
+# users can change the amount of articles to be sent from a page
+# using $articleCount [page number]
+# Commands:
+# $articles [page number]
 @client.command()
 async def articles(ctx, pageNumber) :
   # readjusts invalid page requests  
@@ -147,6 +159,7 @@ async def articles(ctx, pageNumber) :
     await ctx.channel.send('_ _')
     pageNumber = '10'
   
+  # assembles list of articles from desired page
   articles = MarsArticles(int(pageNumber), (int) (ARTICLE_COUNT))
   list_of_articles = articles.getArticles()
   await ctx.channel.send('Here are the articles from page ' + pageNumber + ".")
