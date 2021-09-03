@@ -1,8 +1,7 @@
 # Web scraping components 
 from selenium import webdriver
-import selenium
 from selenium.webdriver.chrome.options import Options
-DRIVER_PATH = '/home/misbahaving/Documents/chromedriver'
+DRIVER_PATH = '/app/.chromedriver/bin/chromedriver'
 
 # headless option
 options = Options()
