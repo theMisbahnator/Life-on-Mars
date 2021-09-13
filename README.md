@@ -6,10 +6,10 @@ This is a Discord Bot dedicated to providing insight about life on Mars!
 
 Using certain commands, the bot can provide photos from the surface of Mars taken 
 from active Rovers using the [NASA API](https://api.nasa.gov/). You can choose between latest photos or a 
-specified date. Additionally, you can access weather patterns (currently in the works)
+specified date.
 
 Furthermore, you can read up on the latest news about mars with the 
-provided relevant news scrapped on the internet using a web scraper.
+provided web scraper, pulling articles from up to 10 pages.
 
 Enjoy! - Misbah Imtiaz
 
